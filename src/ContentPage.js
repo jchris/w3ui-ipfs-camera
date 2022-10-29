@@ -4,6 +4,7 @@ import { useUploadsList } from '@w3ui/react-uploads-list'
 import { withIdentity } from './components/Authenticator'
 import { Camera } from 'react-camera-pro'
 import './spinner.css'
+import './app.css'
 
 function dataURLtoFile (dataurl) {
   const arr = dataurl.split(',')
