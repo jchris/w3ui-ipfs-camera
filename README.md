@@ -1,24 +1,12 @@
-# Example
+# w3ui camera app with IPFS
 
-To run this example:
+This example is based on the [w3ui file upload example](https://github.com/web3-storage/w3ui/tree/main/examples/react/file-upload).
 
-- Clone the w3ui repository and enter the `w3ui` directory
+To run, clone the repo and npm install before starting the server:
 
-  ```sh
-  git clone https://github.com/web3-storage/w3ui
-  cd w3ui
-  ```
-
-- Install dependencies and build:
-
-  ```sh
-  npm install
-  npm run build
-  ```
-
-- Change to this example directory and run the example:
-
-  ```sh
-  cd examples/react/file-upload
-  npm start
-  ```
+```
+git clone https://github.com/jchris/w3ui-ipfs-camera
+cd w3ui-ipfs-camera
+npm install
+npm start
+```
