@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { useUploader } from '@w3ui/react-uploader'
 import { withIdentity } from './components/Authenticator'
+import { Camera } from 'react-camera-pro'
 import './spinner.css'
 
 export function ContentPage () {
@@ -9,6 +10,7 @@ export function ContentPage () {
   const [dataCid, setDataCid] = useState('')
   const [status, setStatus] = useState('')
   const [error, setError] = useState(null)
+  const camera = useRef(null)
 
   if (!uploader) return null
 
@@ -36,6 +38,7 @@ export function ContentPage () {
 
   return (
     <form onSubmit={handleUploadSubmit}>
+      <Camera ref={camera} />
       <div className='db mb3'>
         <label htmlFor='file' className='db mb2'>File:</label>
         <input id='file' className='db pa2 w-100 ba br2' type='file' onChange={e => setFile(e.target.files[0])} required />
