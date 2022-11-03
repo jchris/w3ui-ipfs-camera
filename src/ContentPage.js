@@ -1,8 +1,11 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useUploader } from '@w3ui/react-uploader'
 import { useUploadsList } from '@w3ui/react-uploads-list'
 import { withIdentity } from './components/Authenticator'
 import { Camera } from 'react-camera-pro'
+import * as Name from 'w3name';
+import { base64pad } from 'multiformats/bases/base64'
+
 import './spinner.css'
 import './app.css'
 
@@ -24,9 +27,44 @@ export function ContentPage () {
   const [status, setStatus] = useState('')
   const [error, setError] = useState(null)
   const [images, setImages] = useState([])
+  const [xname, setName] = useState(null)
+  const [w3Rev, setw3Rev] = useState(null)
   const camera = useRef(null)
   // eslint-disable-next-line no-unused-vars
   const {loading, error: listError, data: listData, reload: listReload} = useUploadsList();
+
+  useEffect(() => {
+    // const name = loadDefaultw3name()
+    if (xname) return;
+    const maybeKeyBytes = localStorage.getItem("__app.w3name.key");
+    if (maybeKeyBytes) {
+      Name.from(base64pad.decode(maybeKeyBytes)).then((w3Name) => {
+        Name.resolve(w3Name).then(revision => {
+          setName(w3Name);
+          setw3Rev(revision)
+        });
+      });
+    } else {
+      Name.create().then((w3Name) => {
+        const keyBytes = base64pad.encode(w3Name.key.bytes);
+        localStorage.setItem("__app.w3name.key", keyBytes);
+        const value = "/ipfs/bafybeid3u4ejpcoplzfqouud5f2hgmfyadryy6pipuhrotxy57zi3g22wy"
+        Name.v0(w3Name, value).then(revision=>{
+          Name.publish(revision, w3Name.key).then(() => {
+            setName(w3Name)
+            setw3Rev(revision)
+          });
+        });
+      });
+    }
+  }, [xname]);
+
+  async function publishLatestName(value) {
+    const nextRevision = await Name.increment(w3Rev, value);
+    Name.publish(nextRevision, xname.key).then((rev) => {
+      setw3Rev(rev)
+    })
+  }
 
   if (!uploader) return null
 
@@ -40,6 +78,7 @@ export function ContentPage () {
       setStatus('uploading')
       const cid = await uploader.uploadFile(theFile)
       setImages([{ cid: cid, data: imgdata }, ...images])
+      await publishLatestName("/ipfs/"+cid)
     } catch (err) {
       console.error(err)
       setError(err)
@@ -55,9 +94,11 @@ export function ContentPage () {
     <div>
        <p>
          <button onClick={takePhoto}>Take photo</button> {printStatus}
+         Channel name: <input type="text" defaultValue={xname ? xname.toString() : ""} />
        </p>
        <Camera ref={camera} />
        <ul className='images'>
+       {w3Rev && w3Rev.value && <ImageListItem cid={w3Rev.value.replace('/ipfs/','')}/>}
         {images.map(({ cid, data }) => (
           <ImageListItem key={cid} cid={cid} data={data} />
         ))}
